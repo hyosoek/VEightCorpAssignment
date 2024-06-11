@@ -26,6 +26,9 @@ export class Account extends BaseEntity {
   @Column()
   password: string;
 
+  @Column({ nullable: true })
+  currentHashedRefreshToken: string;
+
   @OneToMany((type) => Board, (board) => board.account, { eager: true })
   boards: Board[];
 
@@ -44,5 +47,13 @@ export class Account extends BaseEntity {
         throw new InternalServerErrorException();
       }
     }
+  }
+
+  static async setCurrentRefreshToken(refreshToken: string, userId: number) {
+    const salt = await bcrypt.genSalt();
+    const currentHashedRefreshToken = await bcrypt.hash(refreshToken, salt);
+    await this.update(userId, {
+      currentHashedRefreshToken,
+    });
   }
 }

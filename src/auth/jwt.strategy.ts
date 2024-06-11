@@ -8,7 +8,7 @@ import 'dotenv/config';
 export class JwtStarategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      secretOrKey: process.env.JWT_SECRET_KEY,
+      secretOrKey: process.env.ACCESS_TOKEN_SECRET_KEY,
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), //get token from header
     });
   }

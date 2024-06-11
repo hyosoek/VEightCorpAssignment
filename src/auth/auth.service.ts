@@ -14,11 +14,21 @@ export class AuthService {
     const { username, password } = authCredentialDto;
     const user = await Account.findOne({ where: { username: username } });
 
+    //if valid data.
     if (user && (await bcrypt.compare(password, user.password))) {
       const payload = { username };
-      const accessToken = this.jwtService.sign(payload, { expiresIn: '300s' });
-      const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-
+      //create token
+      const accessToken = this.jwtService.sign(payload);
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: process.env.REFRESH_TOKEN_SECRET_KEY,
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRE_TIME,
+      });
+      //save refresh token on RDB
+      const salt = await bcrypt.genSalt();
+      const currentHashedRefreshToken = await bcrypt.hash(refreshToken, salt);
+      await Account.update(user.id, {
+        currentHashedRefreshToken,
+      });
       return { accessToken, refreshToken };
     } else {
       throw new UnauthorizedException('logIn failed');

@@ -5,13 +5,13 @@ import { Account } from './account.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { jwtConfig } from 'src/configs/jwt.config';
+import { jwtDefaultConfig } from 'src/configs/jwt.default.config';
 import { JwtStarategy } from './jwt.strategy';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register(jwtConfig),
+    JwtModule.register(jwtDefaultConfig),
     TypeOrmModule.forFeature([Account]),
   ],
   controllers: [AuthController],

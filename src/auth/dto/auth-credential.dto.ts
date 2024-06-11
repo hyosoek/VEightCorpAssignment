@@ -1,5 +1,5 @@
 import { IsString, Length, Matches, Validate } from 'class-validator';
-import { CustomValidator } from '../customValidator.decorator';
+import { CustomValidator } from '../decorator/customValidator.decorator';
 
 export class AuthCredentialDto {
   @Validate(CustomValidator)
