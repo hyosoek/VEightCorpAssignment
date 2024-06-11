@@ -12,7 +12,7 @@ export class JwtStarategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), //get token from header
     });
   }
-  async validate(payload) {
+  async validate(payload: { username: string }) {
     const { username } = payload;
     const user: Account = await Account.findOne({
       where: { username: username },

@@ -29,10 +29,6 @@ export class Account extends BaseEntity {
   @OneToMany((type) => Board, (board) => board.account, { eager: true })
   boards: Board[];
 
-  // why use static?
-  // beacuse when every connection occur, we don't want to make each connection object.
-  // so we use connection Function with static
-  // and... It is just connect for DB(to transfer command)
   static async createUser(authCredentialDto: AuthCredentialDto): Promise<void> {
     const { username, password } = authCredentialDto;
     const salt = await bcrypt.genSalt();
@@ -48,9 +44,5 @@ export class Account extends BaseEntity {
         throw new InternalServerErrorException();
       }
     }
-  }
-
-  static async getAllUser(): Promise<Account[]> {
-    return this.find();
   }
 }

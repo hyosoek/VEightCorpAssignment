@@ -10,15 +10,16 @@ export class AuthService {
 
   async signIn(
     authCredentialDto: AuthCredentialDto,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const { username, password } = authCredentialDto;
     const user = await Account.findOne({ where: { username: username } });
 
-    // if data exist and password right
     if (user && (await bcrypt.compare(password, user.password))) {
-      const payload = { username }; // it can be read only. don't insert private data
-      const accessToken = await this.jwtService.sign(payload);
-      return { accessToken };
+      const payload = { username };
+      const accessToken = this.jwtService.sign(payload, { expiresIn: '300s' });
+      const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
+      return { accessToken, refreshToken };
     } else {
       throw new UnauthorizedException('logIn failed');
     }
@@ -26,9 +27,5 @@ export class AuthService {
 
   async signUp(authCredentialDto: AuthCredentialDto): Promise<void> {
     await Account.createUser(authCredentialDto);
-  }
-
-  async getAllUser(): Promise<Account[]> {
-    return await Account.getAllUser();
   }
 }
