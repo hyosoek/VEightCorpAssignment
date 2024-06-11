@@ -23,12 +23,8 @@ export class AuthService {
         secret: process.env.REFRESH_TOKEN_SECRET_KEY,
         expiresIn: process.env.REFRESH_TOKEN_EXPIRE_TIME,
       });
-      //save refresh token on RDB
-      const salt = await bcrypt.genSalt();
-      const currentHashedRefreshToken = await bcrypt.hash(refreshToken, salt);
-      await Account.update(user.id, {
-        currentHashedRefreshToken,
-      });
+      //save refresh_token on RDB
+      await Account.setCurrentRefreshToken(refreshToken, user.id);
       return { accessToken, refreshToken };
     } else {
       throw new UnauthorizedException('logIn failed');

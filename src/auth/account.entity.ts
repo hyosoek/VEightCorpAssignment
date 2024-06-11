@@ -29,6 +29,9 @@ export class Account extends BaseEntity {
   @Column({ nullable: true })
   currentHashedRefreshToken: string;
 
+  @Column({ default: false })
+  isAdmin: boolean;
+
   @OneToMany((type) => Board, (board) => board.account, { eager: true })
   boards: Board[];
 
