@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BoardStatus } from './board-status.enum';
-import { Account } from 'src/auth/account.entity';
+import { User } from 'src/auth/user.entity';
 
 @Entity() // it means 'create table'
 export class Board extends BaseEntity {
@@ -22,8 +22,8 @@ export class Board extends BaseEntity {
   @Column()
   status: BoardStatus;
 
-  @ManyToOne((type) => Account, (account) => account.boards, { eager: false })
-  account: Account;
+  @ManyToOne((type) => User, (user) => user.boards, { eager: false })
+  user: User;
 
   static async findAll() {
     // usually, doesn't exist built in function is declared

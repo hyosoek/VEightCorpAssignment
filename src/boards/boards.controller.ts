@@ -20,7 +20,7 @@ import { BoardStatusValidationPipe } from './pipes/board-status-validation.pipe'
 import { Board } from './board.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/decorator/get-user.decorator';
-import { Account } from 'src/auth/account.entity';
+import { User } from 'src/auth/user.entity';
 
 @Controller('boards')
 @UseGuards(AuthGuard())
@@ -29,9 +29,9 @@ export class BoardsController {
   constructor(private boardsService: BoardsService) {}
 
   @Get('/owned') // boards/1
-  getBoardById(@GetUser() account: Account): Promise<Board[]> {
-    this.logger.verbose(`User ${account.username} trying to get all boards`);
-    return this.boardsService.getBoardByAccount(account);
+  getBoardById(@GetUser() user: User): Promise<Board[]> {
+    this.logger.verbose(`User ${user.username} trying to get all boards`);
+    return this.boardsService.getBoardByUser(user);
   }
 
   // @Get('/:id') // boards/1
@@ -53,28 +53,28 @@ export class BoardsController {
   @UsePipes(ValidationPipe)
   createBoard(
     @Body() createBoardDto: CreateBoardDto,
-    @GetUser() account: Account,
+    @GetUser() user: User,
   ): Promise<Board> {
     this.logger.verbose(
-      `User ${account.username} creating a new board. Payload: ${JSON.stringify(createBoardDto)}`,
+      `User ${user.username} creating a new board. Payload: ${JSON.stringify(createBoardDto)}`,
     );
-    return this.boardsService.createBoard(createBoardDto, account);
+    return this.boardsService.createBoard(createBoardDto, user);
   }
 
   @Delete('/:id')
   deleteBoard(
     @Param('id', ParseIntPipe) id: number,
-    @GetUser() account: Account,
+    @GetUser() user: User,
   ): Promise<void> {
-    return this.boardsService.deleteBoardByID(id, account);
+    return this.boardsService.deleteBoardByID(id, user);
   }
 
   @Patch('/:id/status') // pipetype : custom_pipe +  variable
   updateBoardStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body('status', BoardStatusValidationPipe) status: BoardStatus,
-    @GetUser() account: Account,
+    @GetUser() user: User,
   ): Promise<Board[]> {
-    return this.boardsService.updateBoardStatus(account, status);
+    return this.boardsService.updateBoardStatus(user, status);
   }
 }

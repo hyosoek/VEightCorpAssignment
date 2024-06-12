@@ -16,7 +16,7 @@ import { Board } from 'src/boards/board.entity';
 
 @Entity()
 @Unique(['username'])
-export class Account extends BaseEntity {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -32,7 +32,7 @@ export class Account extends BaseEntity {
   @Column({ default: false })
   isAdmin: boolean;
 
-  @OneToMany((type) => Board, (board) => board.account, { eager: true })
+  @OneToMany((type) => Board, (board) => board.user, { eager: true })
   boards: Board[];
 
   static async createUser(authCredentialDto: AuthCredentialDto): Promise<void> {

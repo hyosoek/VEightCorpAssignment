@@ -4,12 +4,12 @@ import * as config from 'config';
 const dbConfig = config.get('db');
 
 export const typeORMConfig: TypeOrmModuleOptions = {
-  type: dbConfig.type,
-  host: process.env.POSTGRES_HOST || dbConfig.host,
-  port: Number(process.env.POSTGRES_PORT) || dbConfig.port,
-  username: process.env.POSTGRES_USERNAME || dbConfig.username,
-  password: process.env.POSTGRES_PASSWORD || dbConfig.password,
-  database: process.env.POSTGRES_DBNAME || dbConfig.database,
+  type: 'mysql',
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DBNAME,
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
   synchronize: true,
 };

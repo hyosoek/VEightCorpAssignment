@@ -1,8 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Account } from './account.entity';
+import { User } from '../user.entity';
 import 'dotenv/config';
+import { JwtPayload } from '../payload/auth-credential.dto';
 
 @Injectable()
 export class JwtStarategy extends PassportStrategy(Strategy) {
@@ -12,10 +13,10 @@ export class JwtStarategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), //get token from header
     });
   }
-  async validate(payload: { username: string }) {
-    const { username } = payload;
-    const user: Account = await Account.findOne({
-      where: { username: username },
+  async validate(payload: JwtPayload) {
+    const { id } = payload;
+    const user: User = await User.findOne({
+      where: { id: id },
     });
 
     if (!user) {
