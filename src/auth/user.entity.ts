@@ -10,6 +10,7 @@ import { AuthCredentialDto } from './dto/auth-credential.dto';
 import {
   ConflictException,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { Board } from 'src/boards/board.entity';
@@ -23,10 +24,10 @@ export class User extends BaseEntity {
   @Column()
   username: string;
 
-  @Column()
+  @Column({ length: 500 })
   password: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, length: 500 })
   currentHashedRefreshToken: string;
 
   @Column({ default: false })
@@ -52,11 +53,37 @@ export class User extends BaseEntity {
     }
   }
 
-  static async setCurrentRefreshToken(refreshToken: string, userId: number) {
-    const salt = await bcrypt.genSalt();
-    const currentHashedRefreshToken = await bcrypt.hash(refreshToken, salt);
+  static async setCurrentRefreshToken(
+    refreshToken: string,
+    userId: number,
+  ): Promise<void> {
+    const currentHashedRefreshToken = refreshToken;
     await this.update(userId, {
       currentHashedRefreshToken,
     });
+  }
+
+  static async getCurrentHashedRefreshToken(userId: number): Promise<User> {
+    const user = await User.findOne({
+      where: { id: userId },
+      select: ['id', 'currentHashedRefreshToken'],
+    });
+    return user;
+  }
+
+  static async getPayloadDataFromSignin(
+    username: string,
+    password: string,
+  ): Promise<User> {
+    const user = await User.findOne({
+      where: { username: username },
+      select: ['id', 'username', 'isAdmin'],
+    });
+    if (user && (await bcrypt.compare(password, user.password))) {
+      return user;
+    } else {
+      throw new UnauthorizedException('logIn failed');
+    }
+    return user;
   }
 }

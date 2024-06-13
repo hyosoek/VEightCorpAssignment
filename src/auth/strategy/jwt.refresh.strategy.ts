@@ -1,30 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import 'dotenv/config';
+import { JwtPayload } from '../payload/jwt.payload';
 import { AuthService } from '../auth.service';
 
-//
 @Injectable()
-export class JwtRefreshTokenStrategy extends PassportStrategy(
+export class JwtRefreshStarategy extends PassportStrategy(
   Strategy,
   'jwt-refresh-token',
 ) {
-  // constructor(private readonly authService: AuthService) {
-  //   super({
-  //     jwtFromRequest: ExtractJwt.fromExtractors([
-  //       (request: Request) => {
-  //         // return request?.cookies?.Refresh;
-  //       },
-  //     ]),
-  //     secretOrKey: process.env.REFRESH_TOKEN_SECRET_KEY,
-  //     passReqToCallback: true,
-  //   });
-  // }
-  // async validate(request: Request, payload: TokenPayload) {
-  //   const refreshToken = request.cookies?.Refresh;
-  //   return this.authService.getUserIfRefreshTokenMatches(
-  //     refreshToken,
-  //     payload.userId,
-  //   );
-  // }
+  constructor(private authService: AuthService) {
+    super({
+      secretOrKey: process.env.REFRESH_TOKEN_SECRET_KEY,
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), //get token from header
+      passReqToCallback: true,
+    });
+  }
+  async validate(request: Request, payload: JwtPayload) {
+    const refreshToken = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
+    // only will be used for publish new access token : specialization
+    return this.authService.getAccessTokenIfRefreshTokenMatches(
+      refreshToken,
+      payload.id,
+    );
+  }
 }

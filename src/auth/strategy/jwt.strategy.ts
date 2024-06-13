@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { User } from '../user.entity';
 import 'dotenv/config';
-import { JwtPayload } from '../payload/auth-credential.dto';
+import { JwtPayload } from '../payload/jwt.payload';
 
 @Injectable()
 export class JwtStarategy extends PassportStrategy(Strategy) {
@@ -18,11 +18,10 @@ export class JwtStarategy extends PassportStrategy(Strategy) {
     const user: User = await User.findOne({
       where: { id: id },
     });
-
     if (!user) {
       throw new UnauthorizedException();
     }
-
+    // will be used for personal's authentication : universalization
     return user;
   }
 }

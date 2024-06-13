@@ -3,7 +3,6 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationArguments,
-  Validate,
 } from 'class-validator';
 
 @ValidatorConstraint({ name: 'isNumberArray', async: false })

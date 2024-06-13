@@ -34,21 +34,6 @@ export class BoardsController {
     return this.boardsService.getBoardByUser(user);
   }
 
-  // @Get('/:id') // boards/1
-  // getBoardById(@Param('id', ParseIntPipe) id: number): Promise<Board> {
-  //   return this.boardsService.getBoardByID(id);
-  // }
-
-  @Get()
-  getAllBoards(): Promise<Board[]> {
-    return this.boardsService.getAllBoards();
-  }
-
-  // @Get() // boards?id=1
-  // getBoardById(@Query('id', ParseIntPipe) id: number): Promise<Board> {
-  //   return this.boardsService.getBoardByID(id);
-  // }
-
   @Post() // pipetype : built_in_pipe + dto
   @UsePipes(ValidationPipe)
   createBoard(
