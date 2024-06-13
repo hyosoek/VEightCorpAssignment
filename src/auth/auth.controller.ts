@@ -27,7 +27,7 @@ export class AuthController {
   @Get('/refresh')
   refresh(@GetToken() token: string) {
     //not use service in controller, use service in AuthGuard Strategy
-    return token;
+    return { accessToken: token };
   }
 
   @Post()

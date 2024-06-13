@@ -20,9 +20,11 @@ export class JwtRefreshStarategy extends PassportStrategy(
   async validate(request: Request, payload: JwtPayload) {
     const refreshToken = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
     // only will be used for publish new access token : specialization
-    return this.authService.getAccessTokenIfRefreshTokenMatches(
-      refreshToken,
-      payload.id,
-    );
+    const newAccessToken =
+      await this.authService.getAccessTokenIfRefreshTokenMatches(
+        refreshToken,
+        payload.id,
+      );
+    return newAccessToken;
   }
 }

@@ -1,3 +1,4 @@
+//Active Record Pattern
 import {
   BaseEntity,
   Column,
@@ -71,19 +72,30 @@ export class User extends BaseEntity {
     return user;
   }
 
-  static async getPayloadDataFromSignin(
+  static async getUserDataFromSignin(
     username: string,
     password: string,
   ): Promise<User> {
     const user = await User.findOne({
       where: { username: username },
-      select: ['id', 'username', 'isAdmin'],
+      select: ['id', 'username', 'isAdmin', 'password'],
     });
     if (user && (await bcrypt.compare(password, user.password))) {
       return user;
     } else {
-      throw new UnauthorizedException('logIn failed');
+      throw new UnauthorizedException('signin failed');
     }
-    return user;
+  }
+
+  static async isUserDuplicated(username: string): Promise<boolean> {
+    const data = await User.findOne({
+      where: { username: username },
+      select: ['id'],
+    });
+    if (data) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
