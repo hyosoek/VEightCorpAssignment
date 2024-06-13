@@ -34,14 +34,7 @@ export class AuthService {
   }
 
   async signUp(authCredentialDto: AuthCredentialDto): Promise<void> {
-    if (
-      //if exists (count is better)
-      !(await User.isUserDuplicated(authCredentialDto.username))
-    ) {
-      await User.createUser(authCredentialDto);
-    } else {
-      throw new ConflictException('user already exists');
-    }
+    await User.createUser(authCredentialDto);
   }
 
   // user service

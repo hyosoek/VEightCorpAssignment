@@ -46,7 +46,7 @@ export class User extends BaseEntity {
     try {
       await this.save(user);
     } catch (error) {
-      if (error.code == '23505') {
+      if (error.code == 'ER_DUP_ENTRY') {
         throw new ConflictException('Existing username');
       } else {
         throw new InternalServerErrorException();
@@ -58,10 +58,18 @@ export class User extends BaseEntity {
     refreshToken: string,
     userId: number,
   ): Promise<void> {
-    const currentHashedRefreshToken = refreshToken;
-    await this.update(userId, {
-      currentHashedRefreshToken,
-    });
+    try {
+      const currentHashedRefreshToken = refreshToken;
+      await this.update(userId, {
+        currentHashedRefreshToken,
+      });
+    } catch (error) {
+      if (error.code == '23505') {
+        throw new ConflictException('Non Exist Username');
+      } else {
+        throw new InternalServerErrorException();
+      }
+    }
   }
 
   static async getCurrentHashedRefreshToken(userId: number): Promise<User> {
@@ -84,18 +92,6 @@ export class User extends BaseEntity {
       return user;
     } else {
       throw new UnauthorizedException('signin failed');
-    }
-  }
-
-  static async isUserDuplicated(username: string): Promise<boolean> {
-    const data = await User.findOne({
-      where: { username: username },
-      select: ['id'],
-    });
-    if (data) {
-      return true;
-    } else {
-      return false;
     }
   }
 }

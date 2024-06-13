@@ -11,4 +11,5 @@ export class AuthCredentialDto {
     message: 'password only accepts english and number',
   })
   password: string;
+  //both are same validation
 }
