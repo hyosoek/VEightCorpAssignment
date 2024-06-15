@@ -73,7 +73,7 @@ export class User extends BaseEntity {
   }
 
   static async getCurrentHashedRefreshToken(userId: number): Promise<User> {
-    const user = await User.findOne({
+    const user = await this.findOne({
       where: { id: userId },
       select: ['id', 'currentHashedRefreshToken'],
     });
@@ -84,7 +84,7 @@ export class User extends BaseEntity {
     username: string,
     password: string,
   ): Promise<User> {
-    const user = await User.findOne({
+    const user = await this.findOne({
       where: { username: username },
       select: ['id', 'username', 'isAdmin', 'password'],
     });

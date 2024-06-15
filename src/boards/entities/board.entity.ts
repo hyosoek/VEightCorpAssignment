@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from 'src/auth/user.entity';
+import { NotFoundException } from '@nestjs/common';
 
 @Entity() // it means 'create table'
 export class Board extends BaseEntity {
@@ -23,7 +24,7 @@ export class Board extends BaseEntity {
   views: number;
 
   @Column({ default: true })
-  availabe: boolean;
+  available: boolean;
 
   @Column({ nullable: true })
   imageUrl: string;
@@ -35,7 +36,22 @@ export class Board extends BaseEntity {
   user: User;
 
   static async findAll() {
-    // usually, doesn't exist built in function is declared
     return this.createQueryBuilder('user').getMany();
+  }
+
+  static async findDataById(id: number): Promise<Board> {
+    const boardData: Board = await this.findOne({
+      where: { id: id },
+      select: [
+        'id',
+        'title',
+        'description',
+        'views',
+        'imageUrl',
+        'createdAt',
+        'available',
+      ],
+    });
+    return boardData;
   }
 }

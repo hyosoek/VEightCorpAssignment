@@ -13,6 +13,15 @@ import { AwsService } from 'src/aws/aws.service';
 export class NoticeService {
   constructor(private awsService: AwsService) {}
 
+  async getNoticeById(id: number): Promise<Notice> {
+    const noticeData = await Notice.findDataById(id);
+    if (noticeData == null || noticeData.available == false) {
+      throw new NotFoundException();
+    } else {
+      return noticeData;
+    }
+  }
+
   async createNotice(
     file: Express.Multer.File,
     createBoardDto: CreateBoardDto,

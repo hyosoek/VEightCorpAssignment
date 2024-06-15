@@ -8,6 +8,7 @@ import {
   ValidationPipe,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 
 import { AuthGuard } from '@nestjs/passport';
@@ -16,18 +17,24 @@ import { User } from 'src/auth/user.entity';
 import { NoticeService } from './notice.service';
 import { CreateBoardDto } from '../dto/create-board.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { Notice } from '../entities/notice.entity';
 
 @Controller('notice')
 @UseGuards(AuthGuard())
 export class NoticeController {
   constructor(private noticeService: NoticeService) {}
 
-  //   @Get() // boards/1
-  //   getBoardById(): Promise<Notice[]> {
-  //     return this.noticeService.getNotice();
-  //   }
+  // @Get('/list')
+  // getBoardList(): Promise<Notice[]> {
+  //   return this.noticeService.getNotice();
+  // }
 
-  @Post() // pipetype : built_in_pipe + dto
+  @Get()
+  getBoardById(@Query('id') id: number): Promise<Notice> {
+    return this.noticeService.getNoticeById(id);
+  }
+
+  @Post()
   @UseInterceptors(FileInterceptor('file'))
   @UsePipes(ValidationPipe)
   createBoard(
