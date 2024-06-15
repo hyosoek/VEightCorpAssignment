@@ -1,9 +1,11 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsString, Length } from 'class-validator';
 
 export class CreateBoardDto {
-  @IsNotEmpty() // handler level
+  @IsString()
+  @Length(4, 100)
   title: string;
 
-  @IsNotEmpty()
+  @IsString()
+  @Length(1, 1000)
   description: string;
 }

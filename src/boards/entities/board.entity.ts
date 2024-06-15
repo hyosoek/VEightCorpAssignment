@@ -1,6 +1,7 @@
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -15,8 +16,20 @@ export class Board extends BaseEntity {
   @Column()
   title: string;
 
-  @Column()
+  @Column({ length: 1000 })
   description: string;
+
+  @Column({ default: 0 })
+  views: number;
+
+  @Column({ default: true })
+  availabe: boolean;
+
+  @Column({ nullable: true })
+  imageUrl: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
 
   @ManyToOne((type) => User, (user) => user.boards, { eager: false })
   user: User;
