@@ -14,7 +14,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { Board } from 'src/boards/board.entity';
+import { Board } from 'src/boards/entities/board.entity';
 
 @Entity()
 @Unique(['username'])

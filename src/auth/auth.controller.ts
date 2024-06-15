@@ -10,6 +10,8 @@ import { AuthService } from './auth.service';
 import { AuthCredentialDto } from './dto/auth-credential.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetToken } from './decorator/get-token.decorator';
+import { GetUser } from './decorator/get-user.decorator';
+import { User } from './user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -25,9 +27,16 @@ export class AuthController {
 
   @UseGuards(AuthGuard('jwt-refresh-token'))
   @Get('/refresh')
-  refresh(@GetToken() token: string) {
+  refresh(@GetToken() token: string): { accessToken: string } {
     //not use service in controller, use service in AuthGuard Strategy
     return { accessToken: token };
+  }
+
+  @UseGuards(AuthGuard())
+  @Get('/is-admin')
+  async isAdmin(@GetUser() user: User): Promise<{ isAdmin: boolean }> {
+    const data = await this.authService.isAdmin(user);
+    return { isAdmin: data };
   }
 
   @Post()

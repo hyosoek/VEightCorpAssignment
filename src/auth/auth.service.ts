@@ -62,4 +62,13 @@ export class AuthService {
       throw new UnauthorizedException('invalid authentication, do sign-out');
     }
   }
+
+  //adminCheck
+  async isAdmin(user: User): Promise<boolean> {
+    if (user.isAdmin == true) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
