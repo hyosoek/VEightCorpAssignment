@@ -7,7 +7,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from 'src/auth/user.entity';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { CreateBoardDto } from '../dto/create-board.dto';
 
 @Entity() // it means 'create table'
 export class Board extends BaseEntity {
@@ -35,10 +36,6 @@ export class Board extends BaseEntity {
   @ManyToOne((type) => User, (user) => user.boards, { eager: false })
   user: User;
 
-  static async findAll() {
-    return this.createQueryBuilder('user').getMany();
-  }
-
   static async findDataById(id: number): Promise<Board> {
     const boardData: Board = await this.findOne({
       where: { id: id },
@@ -53,5 +50,20 @@ export class Board extends BaseEntity {
       ],
     });
     return boardData;
+  }
+
+  static async createNotice(
+    createBoardDto: CreateBoardDto,
+    user: User,
+    imageUrl: string,
+  ) {
+    const { title, description } = createBoardDto;
+    const board = Board.create({
+      title,
+      description,
+      user,
+      imageUrl,
+    });
+    await this.save(board);
   }
 }

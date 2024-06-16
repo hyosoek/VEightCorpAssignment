@@ -9,14 +9,17 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  Param,
+  ParseIntPipe,
+  Delete,
+  Patch,
 } from '@nestjs/common';
-
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/decorator/get-user.decorator';
 import { User } from 'src/auth/user.entity';
 import { NoticeService } from './notice.service';
 import { CreateBoardDto } from '../dto/create-board.dto';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Notice } from '../entities/notice.entity';
 
 @Controller('notice')
@@ -28,9 +31,8 @@ export class NoticeController {
   // getBoardList(): Promise<Notice[]> {
   //   return this.noticeService.getNotice();
   // }
-
   @Get()
-  getBoardById(@Query('id') id: number): Promise<Notice> {
+  getBoardById(@Query('id', ParseIntPipe) id: number): Promise<Notice> {
     return this.noticeService.getNoticeById(id);
   }
 
@@ -45,19 +47,24 @@ export class NoticeController {
     return this.noticeService.createNotice(file, createBoardDto, user);
   }
 
-  //   @Delete('/:id')
-  //   deleteBoard(
-  //     @Param('id', ParseIntPipe) id: number,
-  //     @GetUser() user: User,
-  //   ): Promise<void> {
-  //     return this.boardsService.deleteBoardByID(id, user);
-  //   }
+  @Delete()
+  @UsePipes(ValidationPipe)
+  deleteBoard(
+    @Query('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.noticeService.deleteNoticeById(id, user);
+  }
 
-  //   @Patch('/:id/status') // pipetype : custom_pipe +  variable
-  //   updateBoardStatus(
-  //     @Param('id', ParseIntPipe) id: number,
-  //     @GetUser() user: User,
-  //   ): Promise<Board[]> {
-  //     return this.boardsService.updateBoardStatus(user);
-  //   }
+  @Patch()
+  @UseInterceptors(FileInterceptor('file'))
+  @UsePipes(ValidationPipe)
+  updateBoard(
+    @Query('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() updateBoardDto: CreateBoardDto,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.noticeService.updateNoticeById(id, file, updateBoardDto, user);
+  }
 }
