@@ -23,7 +23,7 @@ import { CreateBoardDto } from './dto/create-board.dto';
 export class BoardsController<T> {
   constructor(private readonly boardService: any) {}
 
-  @Get('/list') // for pagenation
+  @Get('/sort') // for pagenation
   getBoardList(
     @Query('sortType') sortType: string,
     @Query('range', ParseIntPipe) range: string,
@@ -32,8 +32,17 @@ export class BoardsController<T> {
     return this.boardService.getBoardsByPageNum(sortType, range, currentPage);
   }
 
-  @Get('/total-pagecount') // for pagenation
-  async getPageCount(
+  @Get('/search')
+  searchBoard(
+    @Query('title') title: string,
+    @Query('username') username: string,
+    @Query('currentPage', ParseIntPipe) currentPage: number,
+  ) {
+    return this.boardService.getBoardsByKeyword(title, username, currentPage);
+  }
+
+  @Get('/sort/total-pagecount') // for pagenation
+  async getBoardPageCount(
     @Query('sortType') sortType: string,
     @Query('range') range: string,
   ) {
@@ -42,6 +51,18 @@ export class BoardsController<T> {
       range,
     );
     return { totalPageCount: totalPageCount };
+  }
+
+  @Get('/search/total-pagecount') // for pagenation
+  async getSearchPageCount(
+    @Query('title') title: string,
+    @Query('username') username: string,
+  ) {
+    const totalPageCount = await this.boardService.getSearchTotalPageCount(
+      title,
+      username,
+    );
+    return { totalSearchPageCount: totalPageCount };
   }
 
   @Get('/')

@@ -8,25 +8,58 @@ import { AwsService } from 'src/aws/aws.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { Board } from './entities/board.entity';
 import 'dotenv/config';
-import { MoreThanOrEqual } from 'typeorm';
+import { Like, MoreThanOrEqual, FindOptions, FindOptionsWhere } from 'typeorm';
 
 @Injectable()
 export abstract class BoardsService<T extends Board> {
   constructor(protected awsService: AwsService) {}
-
   abstract getEntityClass(): typeof Board;
+  entityClass = this.getEntityClass();
 
-  async getTotalPageCount(sortType: string, range: number): Promise<number> {
-    const entityClass = this.getEntityClass();
-
+  async getSortedBoards(
+    sortType: string,
+    range: number,
+    currentPage: number,
+  ): Promise<Board[]> {
+    const totalPageCount = await this.getTotalPageCount(sortType, range);
+    if (totalPageCount < currentPage) {
+      throw new NotFoundException(`over maximum pageCount : ${totalPageCount}`);
+    }
     if (sortType == 'recent') {
-      const entityData = await entityClass.findAndCount({
+      const entityData = await this.entityClass.find({
+        where: {
+          available: true, // available이 true인 데이터만 가져옴
+        },
+        order: { createdAt: 'DESC' }, // 최신순으로 정렬
+        skip: (currentPage - 1) * Number(process.env.BOARD_PER_PAGE), // offset만큼 건너뜀
+        take: Number(process.env.BOARD_PER_PAGE), // limit만큼 가져옴
+        select: ['id', 'title', 'createdAt', 'views'],
+      });
+      return entityData;
+    } else if (sortType == 'popularity') {
+      const daysAgo = this.getDateOfDaysAgoModule(range);
+      const entityData = await this.entityClass.find({
+        where: {
+          available: true, // available이 true인 데이터만 가져옴
+          createdAt: MoreThanOrEqual(daysAgo),
+        },
+        order: { views: 'DESC' }, // 최신순으로 정렬
+        skip: (currentPage - 1) * Number(process.env.BOARD_PER_PAGE), // offset만큼 건너뜀
+        take: Number(process.env.BOARD_PER_PAGE), // limit만큼 가져옴
+        select: ['id', 'title', 'createdAt', 'views'],
+      });
+      return entityData;
+    }
+  }
+  async getTotalPageCount(sortType: string, range: number): Promise<number> {
+    if (sortType == 'recent') {
+      const entityData = await this.entityClass.findAndCount({
         where: { available: true },
       });
       return this.getTotalPageCountModule(entityData[1]);
     } else if (sortType == 'popularity') {
       const daysAgo = this.getDateOfDaysAgoModule(range);
-      const entityData = await entityClass.findAndCount({
+      const entityData = await this.entityClass.findAndCount({
         where: { createdAt: MoreThanOrEqual(daysAgo), available: true },
       });
       return this.getTotalPageCountModule(entityData[1]);
@@ -35,43 +68,55 @@ export abstract class BoardsService<T extends Board> {
     }
   }
 
-  async getBoardsByPageNum(
-    sortType: string,
-    range: number,
+  async getSearchedBoards(
+    title: string,
+    username: string,
     currentPage: number,
   ): Promise<Board[]> {
-    const entityClass = this.getEntityClass();
-    const totalPageCount = await this.getTotalPageCount(sortType, range);
+    const totalPageCount = await this.getSearchTotalPageCount(title, username);
     if (totalPageCount < currentPage) {
       throw new NotFoundException(`over maximum pageCount : ${totalPageCount}`);
     }
-    if (sortType == 'recent') {
-      const entityData = await entityClass.findAndCount({
-        where: {
-          available: true, // available이 true인 데이터만 가져옴
-        },
-        order: { createdAt: 'DESC' }, // 최신순으로 정렬
-        skip: (currentPage - 1) * Number(process.env.BOARD_PER_PAGE), // offset만큼 건너뜀
-        take: Number(process.env.BOARD_PER_PAGE), // limit만큼 가져옴
-        select: ['title', 'createdAt', 'views'],
-      });
-      return entityData[0];
-    } else if (sortType == 'popularity') {
-      const daysAgo = this.getDateOfDaysAgoModule(range);
-      const entityData = await entityClass.findAndCount({
-        where: {
-          available: true, // available이 true인 데이터만 가져옴
-          createdAt: MoreThanOrEqual(daysAgo),
-        },
-        order: { views: 'DESC' }, // 최신순으로 정렬
-        skip: (currentPage - 1) * Number(process.env.BOARD_PER_PAGE), // offset만큼 건너뜀
-        take: Number(process.env.BOARD_PER_PAGE), // limit만큼 가져옴
-        select: ['title', 'createdAt', 'views'],
-      });
-      return entityData[0];
+    let where: FindOptionsWhere<Board> = { available: true };
+
+    if (title) {
+      where.title = Like(`%${title}%`);
     }
+    if (username) {
+      where.user = {
+        username: Like(`%${username}%`),
+      };
+    }
+    const entityData = await this.entityClass.find({
+      where,
+      order: { createdAt: 'DESC' }, // 최신순으로 정렬
+      skip: (currentPage - 1) * Number(process.env.BOARD_PER_PAGE), // offset만큼 건너뜀
+      take: Number(process.env.BOARD_PER_PAGE), // limit만큼 가져옴
+      select: ['id', 'title', 'createdAt', 'views'],
+    });
+    return entityData;
   }
 
+  async getSearchTotalPageCount(
+    title: string,
+    username: string,
+  ): Promise<number> {
+    let where: FindOptionsWhere<Board> = { available: true };
+    if (title) {
+      where.title = Like(`%${title}%`);
+    }
+    if (username) {
+      where.user = {
+        username: Like(`%${username}%`),
+      };
+    }
+    const entityData = await this.entityClass.findAndCount({
+      where,
+    });
+    return this.getTotalPageCountModule(entityData[1]);
+  }
+
+  //private module
   private getDateOfDaysAgoModule(range: number): Date {
     const now = new Date();
     const daysAgo = new Date();
@@ -79,9 +124,10 @@ export abstract class BoardsService<T extends Board> {
     return daysAgo;
   }
 
+  //private module
   private getTotalPageCountModule(entityData: number): number {
     const boardPerPage = Number(process.env.BOARD_PER_PAGE);
-    const totalPageCount = Math.floor((entityData[1] - 1) / boardPerPage) + 1;
+    const totalPageCount = Math.floor((entityData - 1) / boardPerPage) + 1;
     return totalPageCount;
   }
 
@@ -93,8 +139,7 @@ export abstract class BoardsService<T extends Board> {
   }
 
   async getBoardById(id: number): Promise<Board> {
-    const entityClass = this.getEntityClass();
-    const entityData = await entityClass.findDataById(id);
+    const entityData = await this.entityClass.findDataById(id);
     if (entityData == null || (entityData as any).available == false) {
       throw new NotFoundException();
     } else {
@@ -123,8 +168,7 @@ export abstract class BoardsService<T extends Board> {
       ext,
     );
 
-    const entityClass = this.getEntityClass();
-    await entityClass.createNotice(createBoardDto, user, imageUrl);
+    await this.entityClass.createNotice(createBoardDto, user, imageUrl);
   }
 
   async deleteBoardById(id: number, user: User): Promise<void> {
