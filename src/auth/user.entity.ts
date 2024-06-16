@@ -34,7 +34,7 @@ export class User extends BaseEntity {
   @Column({ default: false })
   isAdmin: boolean;
 
-  @OneToMany((type) => Board, (board) => board.user, { eager: true })
+  @OneToMany((type) => Board, (board) => board.user, { eager: false })
   boards: Board[];
 
   static async createUser(authCredentialDto: AuthCredentialDto): Promise<void> {

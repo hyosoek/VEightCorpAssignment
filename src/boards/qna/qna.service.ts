@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Qna } from '../entities/qna.entity';
 import { AwsService } from 'src/aws/aws.service';
 import { BoardsService } from '../boards.service';

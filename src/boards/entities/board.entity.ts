@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from 'src/auth/user.entity';
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateBoardDto } from '../dto/create-board.dto';
 
 @Entity() // it means 'create table'
@@ -65,14 +64,5 @@ export class Board extends BaseEntity {
       imageUrl,
     });
     await this.save(board);
-  }
-
-  static async getTotalPageRecent() {
-    const posts = Board.find({
-      order: {
-        createdAt: 'DESC', // 최신순으로 정렬
-      },
-    });
-    return posts;
   }
 }

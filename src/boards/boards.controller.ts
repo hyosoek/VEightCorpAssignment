@@ -66,8 +66,9 @@ export class BoardsController<T> {
   }
 
   @Get('/')
-  getBoardById(@Query('id', ParseIntPipe) id: number) {
-    return this.boardService.getBoardByIdWithViewUp(id);
+  @UsePipes(ValidationPipe)
+  getBoardById(@Query('id', ParseIntPipe) id: number, @GetUser() user: User) {
+    return this.boardService.getBoardByIdWithViewUp(id, user);
   }
 
   @Post('/')

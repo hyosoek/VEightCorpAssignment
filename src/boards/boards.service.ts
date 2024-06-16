@@ -16,7 +16,7 @@ export abstract class BoardsService<T extends Board> {
   abstract getEntityClass(): typeof Board;
   entityClass = this.getEntityClass();
 
-  async getSortedBoards(
+  async getBoardsByPageNum(
     sortType: string,
     range: number,
     currentPage: number,
@@ -68,7 +68,7 @@ export abstract class BoardsService<T extends Board> {
     }
   }
 
-  async getSearchedBoards(
+  async getBoardsByKeyword(
     title: string,
     username: string,
     currentPage: number,
@@ -131,7 +131,7 @@ export abstract class BoardsService<T extends Board> {
     return totalPageCount;
   }
 
-  async getBoardByIdWithViewUp(id: number): Promise<Board> {
+  async getBoardByIdWithViewUp(id: number, user: User): Promise<Board> {
     const entity = await this.getBoardById(id);
     (entity as any).views = (entity as any).views + 1;
     await (entity as any).save();
@@ -152,12 +152,6 @@ export abstract class BoardsService<T extends Board> {
     createBoardDto: CreateBoardDto,
     user: User,
   ): Promise<void> {
-    if (!user.isAdmin) {
-      throw new UnauthorizedException(
-        `you don't have authority to create entity`,
-      );
-    }
-
     const now = new Date();
     const imageName = user.username + now.getTime();
     const ext = file.originalname.split('.').pop();
@@ -195,31 +189,27 @@ export abstract class BoardsService<T extends Board> {
   ): Promise<void> {
     const { title, description } = updateBoardDto;
     const entity = await this.getBoardById(id);
-    if (entity) {
-      if ((entity as any).user == user || user.isAdmin) {
-        (entity as any).title = title;
-        (entity as any).description = description;
-        await (entity as any).save();
-        if (file) {
-          const now = new Date();
-          const imageName = user.username + now.getTime();
-          const ext = file.originalname.split('.').pop();
+    if ((entity as any).user == user) {
+      (entity as any).title = title;
+      (entity as any).description = description;
+      await (entity as any).save();
+      if (file) {
+        const now = new Date();
+        const imageName = user.username + now.getTime();
+        const ext = file.originalname.split('.').pop();
 
-          const imageUrl = await this.awsService.imageUploadToS3(
-            `${imageName}.${ext}`,
-            file,
-            ext,
-          );
-          (entity as any).imageUrl = imageUrl;
-          await (entity as any).save();
-        }
-      } else {
-        throw new UnauthorizedException(
-          `you don't have authority to update entity`,
+        const imageUrl = await this.awsService.imageUploadToS3(
+          `${imageName}.${ext}`,
+          file,
+          ext,
         );
+        (entity as any).imageUrl = imageUrl;
+        await (entity as any).save();
       }
     } else {
-      throw new NotFoundException();
+      throw new UnauthorizedException(
+        `you don't have authority to update entity`,
+      );
     }
   }
 }
