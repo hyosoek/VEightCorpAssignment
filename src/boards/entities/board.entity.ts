@@ -66,4 +66,13 @@ export class Board extends BaseEntity {
     });
     await this.save(board);
   }
+
+  static async getTotalPageRecent() {
+    const posts = Board.find({
+      order: {
+        createdAt: 'DESC', // 최신순으로 정렬
+      },
+    });
+    return posts;
+  }
 }
