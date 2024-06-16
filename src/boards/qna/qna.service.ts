@@ -1,23 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-
-import { User } from 'src/auth/user.entity';
 import { Qna } from '../entities/qna.entity';
+import { AwsService } from 'src/aws/aws.service';
+import { BoardsService } from '../boards.service';
 
 @Injectable()
-export class QnaService {
-  constructor() {}
+export class QnaService extends BoardsService<Qna> {
+  constructor(protected awsService: AwsService) {
+    super(awsService);
+  }
 
-  async getQnaByUser(user: User): Promise<Qna[]> {
-    const query = Qna.createQueryBuilder('qna');
-    query.where('qna.userId = :userId', { userId: user.id });
-
-    const qnas = await query.getMany();
-
-    if (!qnas) {
-      throw new NotFoundException(
-        `Can't find Board with username :  ${user.username}`,
-      );
-    }
-    return qnas;
+  getEntityClass() {
+    return Qna;
   }
 }

@@ -1,63 +1,62 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Query,
-  Delete,
-  Param,
-  Patch,
-  UsePipes,
-  ValidationPipe,
-  ParseIntPipe,
   UseGuards,
-  Logger,
+  Post,
+  UsePipes,
+  Body,
+  ValidationPipe,
+  UseInterceptors,
+  UploadedFile,
+  Query,
+  ParseIntPipe,
+  Delete,
+  Patch,
 } from '@nestjs/common';
-import { BoardsService } from './boards.service';
-
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/decorator/get-user.decorator';
 import { User } from 'src/auth/user.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateBoardDto } from './dto/create-board.dto';
-import { Board } from './entities/board.entity';
 
-@Controller('boards')
 @UseGuards(AuthGuard())
-export class BoardsController {
-  private logger = new Logger('BoardsController');
-  constructor(private boardsService: BoardsService) {}
+export class BoardsController<T> {
+  constructor(private readonly boardService: any) {}
 
-  @Get('/owned') // boards/1
-  getBoardById(@GetUser() user: User): Promise<Board[]> {
-    this.logger.verbose(`User ${user.username} trying to get all boards`);
-    return this.boardsService.getBoardByUser(user);
+  @Get('/')
+  getBoardById(@Query('id', ParseIntPipe) id: number) {
+    return this.boardService.getBoardById(id);
   }
 
-  @Post() // pipetype : built_in_pipe + dto
+  @Post('/')
+  @UseInterceptors(FileInterceptor('file'))
   @UsePipes(ValidationPipe)
   createBoard(
+    @UploadedFile() file: Express.Multer.File,
     @Body() createBoardDto: CreateBoardDto,
     @GetUser() user: User,
-  ): Promise<Board> {
-    this.logger.verbose(
-      `User ${user.username} creating a new board. Payload: ${JSON.stringify(createBoardDto)}`,
-    );
-    return this.boardsService.createBoard(createBoardDto, user);
+  ): Promise<void> {
+    return this.boardService.createBoard(file, createBoardDto, user);
   }
 
-  @Delete('/:id')
+  @Delete('/')
+  @UsePipes(ValidationPipe)
   deleteBoard(
-    @Param('id', ParseIntPipe) id: number,
+    @Query('id', ParseIntPipe) id: number,
     @GetUser() user: User,
   ): Promise<void> {
-    return this.boardsService.deleteBoardByID(id, user);
+    return this.boardService.deleteBoardById(id, user);
   }
 
-  @Patch('/:id/status') // pipetype : custom_pipe +  variable
-  updateBoardStatus(
-    @Param('id', ParseIntPipe) id: number,
+  @Patch('/')
+  @UseInterceptors(FileInterceptor('file'))
+  @UsePipes(ValidationPipe)
+  updateBoard(
+    @Query('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() updateBoardDto: any,
     @GetUser() user: User,
-  ): Promise<Board[]> {
-    return this.boardsService.updateBoardStatus(user);
+  ): Promise<void> {
+    return this.boardService.updateBoardById(id, file, updateBoardDto, user);
   }
 }
