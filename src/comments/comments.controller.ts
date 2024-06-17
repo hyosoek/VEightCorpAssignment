@@ -14,10 +14,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/decorator/get-user.decorator';
 import { User } from 'src/auth/user.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { CommentsService } from './comments.service';
+import { Comment } from './entities/comment.entity';
 
 @UseGuards(AuthGuard())
-export class CommnetsController<T> {
-  constructor(private readonly commentService: any) {}
+export class CommentsController<T extends Comment> {
+  constructor(private readonly commentService: CommentsService<T>) {}
 
   @Get('/list') // for pagenation
   getCommentList(

@@ -8,6 +8,8 @@ import { InquiryModule } from './boards/inquiry/inquiry.module';
 import { QnaModule } from './boards/qna/qna.module';
 import { QnaCommentModule } from './comments/qna/qna-comment.module';
 import { InquiryCommentModule } from './comments/inquiry/inquiry-comment.module';
+import { QnaReplyModule } from './reply/qna/qna-reply.module';
+import { InquiryReplyModule } from './reply/inquiry/inquiry-reply.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { InquiryCommentModule } from './comments/inquiry/inquiry-comment.module'
     QnaModule,
     QnaCommentModule,
     InquiryCommentModule,
+    QnaReplyModule,
+    InquiryReplyModule,
   ],
 })
 export class AppModule {}

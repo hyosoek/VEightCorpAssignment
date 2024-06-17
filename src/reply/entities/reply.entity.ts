@@ -4,16 +4,15 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from 'src/auth/user.entity';
 import { Board } from 'src/boards/entities/board.entity';
-import { CreateCommentDto } from '../dto/create-comment.dto';
-import { Reply } from 'src/reply/entities/reply.entity';
+import { Comment } from 'src/comments/entities/comment.entity';
+import { CreateReplyDto } from '../dto/create-reply.dto';
 
 @Entity() // it means 'create table'
-export class Comment extends BaseEntity {
+export class Reply extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -32,11 +31,11 @@ export class Comment extends BaseEntity {
   @ManyToOne((type) => Board, (board) => board.comments, { eager: false })
   board: Board;
 
-  @OneToMany((type) => Reply, (reply) => reply.comment, { eager: true })
-  replys: Reply[];
+  @ManyToOne((type) => Comment, (comment) => comment.replys, { eager: false })
+  comment: Comment;
 
-  // static async findDataById(id: number): Promise<Comment> {
-  //   const commentData: Comment = await this.findOne({
+  // static async findDataById(id: number): Promise<Reply> {
+  //   const replyData: Reply = await this.findOne({
   //     where: { id: id },
   //     relations: ['user'],
   //     select: ['id', 'description', 'createdAt', 'available', 'user'],
@@ -44,17 +43,19 @@ export class Comment extends BaseEntity {
   //   return commentData;
   // }
 
-  static async createComment(
-    createCommentDto: CreateCommentDto,
+  static async createReply(
+    createCommentDto: CreateReplyDto,
     user: User,
     board: Board,
+    comment: Comment,
   ) {
     const { description } = createCommentDto;
-    const comment = Comment.create({
+    const reply = Reply.create({
       description,
       user,
       board,
+      comment,
     });
-    await this.save(comment);
+    await this.save(reply);
   }
 }

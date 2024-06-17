@@ -31,7 +31,7 @@ export abstract class CommentsService<T extends Comment> {
       order: { createdAt: 'DESC' }, // 최신순으로 정렬
       skip: (currentPage - 1) * Number(process.env.COMMENT_PER_PAGE),
       take: Number(process.env.COMMENT_PER_PAGE),
-      select: ['id', 'description', 'user'],
+      select: ['id', 'description', 'createdAt', 'available', 'user'],
     });
     return entityData;
   }
