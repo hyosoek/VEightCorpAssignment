@@ -162,7 +162,7 @@ export abstract class BoardsService<T extends Board> {
       ext,
     );
 
-    await this.entityClass.createNotice(createBoardDto, user, imageUrl);
+    await this.entityClass.createBoard(createBoardDto, user, imageUrl);
   }
 
   async deleteBoardById(id: number, user: User): Promise<void> {

@@ -4,10 +4,12 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from 'src/auth/user.entity';
 import { CreateBoardDto } from '../dto/create-board.dto';
+import { Comment } from 'src/comments/entities/comment.entity';
 
 @Entity() // it means 'create table'
 export class Board extends BaseEntity {
@@ -35,6 +37,9 @@ export class Board extends BaseEntity {
   @ManyToOne((type) => User, (user) => user.boards, { eager: false })
   user: User;
 
+  @OneToMany((type) => Comment, (comment) => comment.board, { eager: false })
+  comments: Comment[];
+
   static async findDataById(id: number): Promise<Board> {
     const boardData: Board = await this.findOne({
       where: { id: id },
@@ -51,7 +56,7 @@ export class Board extends BaseEntity {
     return boardData;
   }
 
-  static async createNotice(
+  static async createBoard(
     createBoardDto: CreateBoardDto,
     user: User,
     imageUrl: string,

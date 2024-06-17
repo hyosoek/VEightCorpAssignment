@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { Board } from 'src/boards/entities/board.entity';
+import { Comment } from 'src/comments/entities/comment.entity';
 
 @Entity()
 @Unique(['username'])
@@ -36,6 +37,9 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => Board, (board) => board.user, { eager: false })
   boards: Board[];
+
+  @OneToMany((type) => Comment, (comment) => comment.user, { eager: false })
+  comments: Comment[];
 
   static async createUser(authCredentialDto: AuthCredentialDto): Promise<void> {
     const { username, password } = authCredentialDto;
