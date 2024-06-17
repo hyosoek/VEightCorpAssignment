@@ -29,8 +29,8 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t your-dockerhub-username/your-image-name:latest .
-          docker push your-dockerhub-username/your-image-name:latest
+          docker build -t tennfin1/veight:latest .
+          docker push tennfin1/veight:latest
 
       - name: SSH to EC2 and update container
         uses: appleboy/ssh-action@v0.1.5
@@ -40,7 +40,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             #!/bin/bash
-            docker pull your-dockerhub-username/your-image-name:latest
-            docker stop your-container-name
-            docker rm your-container-name
-            docker run -d --name your-container-name -p 8000:3000 your-dockerhub-username/your-image-name:latest
+            docker pull tennfin1/veight:latest
+            docker stop veight
+            docker rm veight
+            docker run -d --name veight -p 8000:3000 tennfin1/veight:latest
