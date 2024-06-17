@@ -17,7 +17,7 @@ import { User } from './user.entity';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('/sign-in')
+  @Post('/signin')
   signIn(
     @Body(ValidationPipe) authCredentialDto: AuthCredentialDto,
   ): Promise<{ accessToken: string; refreshToken: string }> {
