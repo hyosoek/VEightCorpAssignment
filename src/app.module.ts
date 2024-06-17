@@ -6,8 +6,8 @@ import { AuthModule } from './auth/auth.module';
 import { NoticeModule } from './boards/notice/notice.module';
 import { InquiryModule } from './boards/inquiry/inquiry.module';
 import { QnaModule } from './boards/qna/qna.module';
-import { QnaComment } from './comments/entities/qna-comment.entity';
 import { QnaCommentModule } from './comments/qna/qna-comment.module';
+import { InquiryCommentModule } from './comments/inquiry/inquiry-comment.module';
 
 @Module({
   imports: [
@@ -17,6 +17,7 @@ import { QnaCommentModule } from './comments/qna/qna-comment.module';
     InquiryModule,
     QnaModule,
     QnaCommentModule,
+    InquiryCommentModule,
   ],
 })
 export class AppModule {}

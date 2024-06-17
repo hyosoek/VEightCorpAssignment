@@ -96,7 +96,7 @@ export class BoardsController<T> {
   updateBoard(
     @Query('id', ParseIntPipe) id: number,
     @UploadedFile() file: Express.Multer.File,
-    @Body() updateBoardDto: any,
+    @Body() updateBoardDto: CreateBoardDto,
     @GetUser() user: User,
   ): Promise<void> {
     return this.boardService.updateBoardById(id, file, updateBoardDto, user);

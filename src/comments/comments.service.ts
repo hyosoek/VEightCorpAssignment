@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Comment } from './entities/comment.entity';
 import { Board } from 'src/boards/entities/board.entity';
 import { User } from 'src/auth/user.entity';
@@ -14,8 +18,9 @@ export abstract class CommentsService<T extends Comment> {
   async getCommentsByPageNum(
     boardId: number,
     currentPage: number,
+    user: User,
   ): Promise<Comment[]> {
-    const totalPageCount = await this.getTotalPageCount(boardId);
+    const totalPageCount = await this.getTotalPageCount(boardId, user);
     if (totalPageCount < currentPage) {
       throw new NotFoundException(`over maximum pageCount : ${totalPageCount}`);
     }
@@ -31,7 +36,7 @@ export abstract class CommentsService<T extends Comment> {
     return entityData;
   }
 
-  async getTotalPageCount(boardId: number): Promise<number> {
+  async getTotalPageCount(boardId: number, user: User): Promise<number> {
     const entityData = await this.entityClass.findAndCount({
       relations: ['board'],
       where: { available: true, board: { id: boardId } },
@@ -47,13 +52,52 @@ export abstract class CommentsService<T extends Comment> {
   }
 
   async createComment(
-    createBoardDto: CreateCommentDto,
+    createCommentDto: CreateCommentDto,
+    boardId: number,
     user: User,
   ): Promise<void> {
-    const { boardId } = createBoardDto;
     const board = await this.entityBoardClass.findOne({
       where: { id: boardId },
     });
-    await this.entityClass.createComment(createBoardDto, user, board);
+    await this.entityClass.createComment(createCommentDto, user, board);
+  }
+
+  async updateCommentById(
+    commentId: number,
+    updateCommentDto: CreateCommentDto,
+    user: User,
+  ): Promise<void> {
+    const { description } = updateCommentDto;
+    const options: any = { where: { id: commentId } };
+    options.relations = ['user'];
+    const comment = await this.entityClass.findOne(options);
+    if (!comment || comment.available == false) {
+      throw new NotFoundException(`invalid commentId`);
+    }
+    if (user.id != comment.user.id) {
+      // 게시글의 주인이 아닌 경우
+      throw new UnauthorizedException(
+        `you don't have authority to update comment`,
+      );
+    }
+    comment.description = description;
+    comment.save();
+  }
+
+  async deleteCommentById(commentId: number, user: User): Promise<void> {
+    const options: any = { where: { id: commentId } };
+    options.relations = ['user'];
+    const comment = await this.entityClass.findOne(options);
+    if (!comment || comment.available == false) {
+      throw new NotFoundException(`invalid commentId`);
+    }
+    if (user.isAdmin == false && user.id != comment.user.id) {
+      // 관리자가 아니고, 게시글의 주인이 아닌 경우
+      throw new UnauthorizedException(
+        `you don't have authority to delete comment`,
+      );
+    }
+    comment.available = false;
+    comment.save();
   }
 }

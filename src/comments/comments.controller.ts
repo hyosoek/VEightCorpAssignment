@@ -5,8 +5,6 @@ import {
   UsePipes,
   Body,
   ValidationPipe,
-  UseInterceptors,
-  UploadedFile,
   Query,
   ParseIntPipe,
   Delete,
@@ -15,52 +13,63 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/decorator/get-user.decorator';
 import { User } from 'src/auth/user.entity';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateCommentDto } from './dto/create-comment.dto';
 
 @UseGuards(AuthGuard())
 export class CommnetsController<T> {
-  constructor(private readonly boardService: any) {}
+  constructor(private readonly commentService: any) {}
 
   @Get('/list') // for pagenation
-  getBoardList(
+  getCommentList(
     @Query('boardId', ParseIntPipe) boardId: number,
     @Query('currentPage', ParseIntPipe) currentPage: number,
-  ) {
-    return this.boardService.getCommentsByPageNum(boardId, currentPage);
+    @GetUser() user: User,
+  ): Promise<Comment[]> {
+    return this.commentService.getCommentsByPageNum(boardId, currentPage, user);
   }
 
   @Get('/list/total-pagecount') // for pagenation
-  async getBoardPageCount(@Query('boardId', ParseIntPipe) boardId: number) {
-    const totalPageCount = await this.boardService.getTotalPageCount(boardId);
+  async getCommentPageCount(
+    @Query('boardId', ParseIntPipe) boardId: number,
+    @GetUser() user: User,
+  ) {
+    const totalPageCount = await this.commentService.getTotalPageCount(
+      boardId,
+      user,
+    );
     return { totalPageCount: totalPageCount };
   }
 
   @Post('/')
   @UsePipes(ValidationPipe)
-  createBoard(
+  createComment(
     @Body() createCommentDto: CreateCommentDto,
+    @Query('boardId', ParseIntPipe) boardId: number,
     @GetUser() user: User,
   ): Promise<void> {
-    return this.boardService.createComment(createCommentDto, user);
+    return this.commentService.createComment(createCommentDto, boardId, user);
   }
 
-  //   @Delete('/')
-  //   @UsePipes(ValidationPipe)
-  //   deleteBoard(
-  //     @Query('id', ParseIntPipe) id: number,
-  //     @GetUser() user: User,
-  //   ): Promise<void> {
-  //     return this.boardService.deleteBoardById(id, user);
-  //   }
+  @Delete('/')
+  @UsePipes(ValidationPipe)
+  deleteComment(
+    @Query('commentId', ParseIntPipe) commentId: number,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.commentService.deleteCommentById(commentId, user);
+  }
 
-  //   @Patch('/')
-  //   @UsePipes(ValidationPipe)
-  //   updateBoard(
-  //     @Query('id', ParseIntPipe) id: number,
-  //     @Body() updateBoardDto: any,
-  //     @GetUser() user: User,
-  //   ): Promise<void> {
-  //     return this.boardService.updateBoardById(id, file, updateBoardDto, user);
-  //   }
+  @Patch('/')
+  @UsePipes(ValidationPipe)
+  updateComment(
+    @Query('commentId', ParseIntPipe) commentId: number,
+    @Body() updateCommentDto: CreateCommentDto,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.commentService.updateCommentById(
+      commentId,
+      updateCommentDto,
+      user,
+    );
+  }
 }
