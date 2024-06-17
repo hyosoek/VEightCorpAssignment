@@ -28,12 +28,36 @@ export abstract class CommentsService<T extends Comment> {
       where: {
         available: true, // available이 true인 데이터만 가져옴
       },
+      relations: ['user'],
       order: { createdAt: 'DESC' }, // 최신순으로 정렬
       skip: (currentPage - 1) * Number(process.env.COMMENT_PER_PAGE),
       take: Number(process.env.COMMENT_PER_PAGE),
       select: ['id', 'description', 'createdAt', 'available', 'user'],
     });
-    return entityData;
+    const filteredData = entityData.map((entity) => {
+      const { user, replys } = entity;
+      if (user) {
+        entity.user = {
+          id: user.id,
+          username: user.username,
+        } as any;
+      }
+      if (replys) {
+        entity.replys = replys.map((reply) => {
+          const { user: replyUser } = reply;
+          if (replyUser) {
+            reply.user = {
+              id: replyUser.id,
+              username: replyUser.username,
+            } as any;
+          }
+          return reply;
+        });
+      }
+      return entity;
+    });
+
+    return filteredData;
   }
 
   async getTotalPageCount(boardId: number, user: User): Promise<number> {

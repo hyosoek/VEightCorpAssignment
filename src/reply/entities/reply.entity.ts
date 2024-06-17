@@ -25,7 +25,7 @@ export class Reply extends BaseEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne((type) => User, (user) => user.comments, { eager: false })
+  @ManyToOne((type) => User, (user) => user.comments, { eager: true })
   user: User;
 
   @ManyToOne((type) => Board, (board) => board.comments, { eager: false })

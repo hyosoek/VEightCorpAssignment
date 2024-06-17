@@ -43,6 +43,7 @@ export class Board extends BaseEntity {
   static async findDataById(id: number): Promise<Board> {
     const boardData: Board = await this.findOne({
       where: { id: id },
+      relations: ['user'],
       select: [
         'id',
         'title',
@@ -51,8 +52,19 @@ export class Board extends BaseEntity {
         'imageUrl',
         'createdAt',
         'available',
+        'user',
       ],
     });
+    if (boardData) {
+      // user의 id와 username만 남기기
+      const { user } = boardData;
+      if (user) {
+        boardData.user = {
+          id: user.id,
+          username: user.username,
+        } as any;
+      }
+    }
     return boardData;
   }
 
