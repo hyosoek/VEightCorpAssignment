@@ -4,7 +4,7 @@ import * as config from 'config';
 const dbConfig = config.get('db');
 
 export const typeORMConfig: TypeOrmModuleOptions = {
-  type: 'mysql2',
+  type: 'mysql',
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
   username: process.env.DB_USERNAME,
