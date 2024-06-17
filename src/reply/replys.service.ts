@@ -43,7 +43,7 @@ export abstract class ReplysService<T extends Reply> {
     const options: any = { where: { id: replyId } };
     options.relations = ['user'];
     const reply = await this.entityClass.findOne(options);
-    if (!reply || reply.available == false) {
+    if (!reply) {
       throw new NotFoundException(`invalid commentId`);
     }
     if (user.id != reply.user.id) {
@@ -60,7 +60,7 @@ export abstract class ReplysService<T extends Reply> {
     const options: any = { where: { id: replyId } };
     options.relations = ['user'];
     const reply = await this.entityClass.findOne(options);
-    if (!reply || reply.available == false) {
+    if (!reply) {
       throw new NotFoundException(`invalid commentId`);
     }
     if (user.isAdmin == false && user.id != reply.user.id) {
@@ -69,7 +69,6 @@ export abstract class ReplysService<T extends Reply> {
         `you don't have authority to delete comment`,
       );
     }
-    reply.available = false;
-    reply.save();
+    await this.entityClass.softRemove(reply);
   }
 }

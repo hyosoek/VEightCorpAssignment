@@ -6,9 +6,15 @@ import { repl } from '@nestjs/core';
 
 @Entity() // it means 'create table'
 export class Qna extends Board {
-  @OneToMany(() => QnaComment, (comment) => comment.board, { eager: false })
+  @OneToMany(() => QnaComment, (comment) => comment.board, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   comments: QnaComment[];
 
-  @OneToMany(() => QnaReply, (reply) => reply.board, { eager: false })
+  @OneToMany(() => QnaReply, (reply) => reply.board, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   replys: QnaReply[];
 }

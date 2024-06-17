@@ -25,14 +25,11 @@ export abstract class CommentsService<T extends Comment> {
       throw new NotFoundException(`over maximum pageCount : ${totalPageCount}`);
     }
     const entityData = await this.entityClass.find({
-      where: {
-        available: true, // available이 true인 데이터만 가져옴
-      },
       relations: ['user'],
       order: { createdAt: 'DESC' }, // 최신순으로 정렬
       skip: (currentPage - 1) * Number(process.env.COMMENT_PER_PAGE),
       take: Number(process.env.COMMENT_PER_PAGE),
-      select: ['id', 'description', 'createdAt', 'available', 'user'],
+      select: ['id', 'description', 'createdAt', 'user'],
     });
     const filteredData = entityData.map((entity) => {
       const { user, replys } = entity;
@@ -63,7 +60,7 @@ export abstract class CommentsService<T extends Comment> {
   async getTotalPageCount(boardId: number, user: User): Promise<number> {
     const entityData = await this.entityClass.findAndCount({
       relations: ['board'],
-      where: { available: true, board: { id: boardId } },
+      where: { board: { id: boardId } },
     });
     return this.getTotalPageCountModule(entityData[1]);
   }
@@ -95,7 +92,7 @@ export abstract class CommentsService<T extends Comment> {
     const options: any = { where: { id: commentId } };
     options.relations = ['user'];
     const comment = await this.entityClass.findOne(options);
-    if (!comment || comment.available == false) {
+    if (!comment) {
       throw new NotFoundException(`invalid commentId`);
     }
     if (user.id != comment.user.id) {
@@ -112,7 +109,7 @@ export abstract class CommentsService<T extends Comment> {
     const options: any = { where: { id: commentId } };
     options.relations = ['user'];
     const comment = await this.entityClass.findOne(options);
-    if (!comment || comment.available == false) {
+    if (!comment) {
       throw new NotFoundException(`invalid commentId`);
     }
     if (user.isAdmin == false && user.id != comment.user.id) {
@@ -121,7 +118,6 @@ export abstract class CommentsService<T extends Comment> {
         `you don't have authority to delete comment`,
       );
     }
-    comment.available = false;
-    comment.save();
+    await this.entityClass.softRemove(comment);
   }
 }

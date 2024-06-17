@@ -5,13 +5,9 @@ import { Qna } from 'src/boards/entities/qna.entity';
 
 @Entity() // it means 'create table'
 export class QnaReply extends Reply {
-  @ManyToOne(() => QnaComment, (comment) => comment.replys, {
-    eager: false,
-  })
+  @ManyToOne(() => QnaComment, (comment) => comment.replys)
   comment: QnaComment;
 
-  @ManyToOne(() => Qna, (board) => board.replys, {
-    eager: false,
-  })
+  @ManyToOne(() => Qna, (board) => board.replys)
   board: Qna;
 }

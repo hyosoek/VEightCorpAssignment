@@ -2,6 +2,7 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -19,19 +20,19 @@ export class Reply extends BaseEntity {
   @Column({ length: 500 })
   description: string;
 
-  @Column({ default: true })
-  available: boolean;
-
   @CreateDateColumn()
   createdAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 
   @ManyToOne((type) => User, (user) => user.comments, { eager: true })
   user: User;
 
-  @ManyToOne((type) => Board, (board) => board.comments, { eager: false })
+  @ManyToOne((type) => Board, (board) => board.comments)
   board: Board;
 
-  @ManyToOne((type) => Comment, (comment) => comment.replys, { eager: false })
+  @ManyToOne((type) => Comment, (comment) => comment.replys)
   comment: Comment;
 
   // static async findDataById(id: number): Promise<Reply> {

@@ -5,9 +5,13 @@ import { QnaReply } from 'src/reply/entities/qna-reply.entity';
 
 @Entity() // it means 'create table'
 export class QnaComment extends Comment {
-  @ManyToOne(() => Qna, (board) => board.comments, { eager: false })
+  @ManyToOne(() => Qna, (board) => board.comments)
   board: Qna;
 
-  @OneToMany((type) => QnaReply, (reply) => reply.comment, { eager: true })
+  @OneToMany((type) => QnaReply, (reply) => reply.comment, {
+    eager: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   replys: QnaReply[];
 }

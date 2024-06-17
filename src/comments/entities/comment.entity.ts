@@ -2,6 +2,7 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
@@ -20,19 +21,23 @@ export class Comment extends BaseEntity {
   @Column({ length: 500 })
   description: string;
 
-  @Column({ default: true })
-  available: boolean;
+  @DeleteDateColumn()
+  deletedAt?: Date;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne((type) => User, (user) => user.comments, { eager: false })
+  @ManyToOne((type) => User, (user) => user.comments)
   user: User;
 
-  @ManyToOne((type) => Board, (board) => board.comments, { eager: false })
+  @ManyToOne((type) => Board, (board) => board.comments)
   board: Board;
 
-  @OneToMany((type) => Reply, (reply) => reply.comment, { eager: true })
+  @OneToMany((type) => Reply, (reply) => reply.comment, {
+    eager: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   replys: Reply[];
 
   // static async findDataById(id: number): Promise<Comment> {

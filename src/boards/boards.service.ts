@@ -27,9 +27,6 @@ export abstract class BoardsService<T extends Board> {
     }
     if (sortType == 'recent') {
       const entityData = await this.entityClass.find({
-        where: {
-          available: true, // available이 true인 데이터만 가져옴
-        },
         order: { createdAt: 'DESC' }, // 최신순으로 정렬
         skip: (currentPage - 1) * Number(process.env.BOARD_PER_PAGE), // offset만큼 건너뜀
         take: Number(process.env.BOARD_PER_PAGE), // limit만큼 가져옴
@@ -40,7 +37,6 @@ export abstract class BoardsService<T extends Board> {
       const daysAgo = this.getDateOfDaysAgoModule(range);
       const entityData = await this.entityClass.find({
         where: {
-          available: true, // available이 true인 데이터만 가져옴
           createdAt: MoreThanOrEqual(daysAgo),
         },
         order: { views: 'DESC' }, // 최신순으로 정렬
@@ -53,14 +49,12 @@ export abstract class BoardsService<T extends Board> {
   }
   async getTotalPageCount(sortType: string, range: number): Promise<number> {
     if (sortType == 'recent') {
-      const entityData = await this.entityClass.findAndCount({
-        where: { available: true },
-      });
+      const entityData = await this.entityClass.findAndCount();
       return this.getTotalPageCountModule(entityData[1]);
     } else if (sortType == 'popularity') {
       const daysAgo = this.getDateOfDaysAgoModule(range);
       const entityData = await this.entityClass.findAndCount({
-        where: { createdAt: MoreThanOrEqual(daysAgo), available: true },
+        where: { createdAt: MoreThanOrEqual(daysAgo) },
       });
       return this.getTotalPageCountModule(entityData[1]);
     } else {
@@ -77,7 +71,7 @@ export abstract class BoardsService<T extends Board> {
     if (totalPageCount < currentPage) {
       throw new NotFoundException(`over maximum pageCount : ${totalPageCount}`);
     }
-    let where: FindOptionsWhere<Board> = { available: true };
+    let where: FindOptionsWhere<Board> = {};
 
     if (title) {
       where.title = Like(`%${title}%`);
@@ -101,7 +95,7 @@ export abstract class BoardsService<T extends Board> {
     title: string,
     username: string,
   ): Promise<number> {
-    let where: FindOptionsWhere<Board> = { available: true };
+    let where: FindOptionsWhere<Board> = {};
     if (title) {
       where.title = Like(`%${title}%`);
     }
@@ -140,7 +134,7 @@ export abstract class BoardsService<T extends Board> {
 
   async getBoardById(id: number): Promise<Board> {
     const entityData = await this.entityClass.findDataById(id);
-    if (entityData == null || (entityData as any).available == false) {
+    if (entityData == null) {
       throw new NotFoundException();
     } else {
       return entityData;
@@ -171,8 +165,7 @@ export abstract class BoardsService<T extends Board> {
     const entity = await this.getBoardById(id);
     if (entity) {
       if ((entity as any).user == user || user.isAdmin) {
-        (entity as any).available = false;
-        await (entity as any).save();
+        this.entityClass.softRemove(entity);
       } else {
         throw new UnauthorizedException(
           `you don't have authority to delete entity`,

@@ -2,6 +2,7 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
@@ -25,19 +26,22 @@ export class Board extends BaseEntity {
   @Column({ default: 0 })
   views: number;
 
-  @Column({ default: true })
-  available: boolean;
-
   @Column({ nullable: true })
   imageUrl: string;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne((type) => User, (user) => user.boards, { eager: false })
+  @DeleteDateColumn()
+  deletedAt?: Date;
+
+  @ManyToOne((type) => User, (user) => user.boards)
   user: User;
 
-  @OneToMany((type) => Comment, (comment) => comment.board, { eager: false })
+  @OneToMany((type) => Comment, (comment) => comment.board, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   comments: Comment[];
 
   static async findDataById(id: number): Promise<Board> {
@@ -51,7 +55,6 @@ export class Board extends BaseEntity {
         'views',
         'imageUrl',
         'createdAt',
-        'available',
         'user',
       ],
     });
