@@ -152,16 +152,18 @@ export abstract class BoardsService<T extends Board> {
     createBoardDto: CreateBoardDto,
     user: User,
   ): Promise<void> {
-    const now = new Date();
-    const imageName = user.username + now.getTime();
-    const ext = file.originalname.split('.').pop();
+    let imageUrl = null;
+    if (file) {
+      const now = new Date();
+      const imageName = user.username + now.getTime();
+      const ext = file.originalname.split('.').pop();
 
-    const imageUrl = await this.awsService.imageUploadToS3(
-      `${imageName}.${ext}`,
-      file,
-      ext,
-    );
-
+      const imageUrl = await this.awsService.imageUploadToS3(
+        `${imageName}.${ext}`,
+        file,
+        ext,
+      );
+    }
     await this.entityClass.createBoard(createBoardDto, user, imageUrl);
   }
 
