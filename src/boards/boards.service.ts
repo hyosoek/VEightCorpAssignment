@@ -152,7 +152,7 @@ export abstract class BoardsService<T extends Board> {
       const imageName = user.username + now.getTime();
       const ext = file.originalname.split('.').pop();
 
-      const imageUrl = await this.awsService.imageUploadToS3(
+      imageUrl = await this.awsService.imageUploadToS3(
         `${imageName}.${ext}`,
         file,
         ext,
