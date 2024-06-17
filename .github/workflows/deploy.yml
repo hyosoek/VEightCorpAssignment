@@ -41,6 +41,6 @@ jobs:
           script: |
             #!/bin/bash
             docker pull tennfin1/veight:latest
-            docker stop veight
-            docker rm veight
+            docker stop veight || true
+            docker rm veight || true
             docker run -d --name veight -p 8000:3000 tennfin1/veight:latest
