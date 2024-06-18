@@ -184,7 +184,8 @@ export abstract class BoardsService<T extends Board> {
   ): Promise<void> {
     const { title, description } = updateBoardDto;
     const entity = await this.getBoardById(id);
-    if ((entity as any).user == user) {
+
+    if ((entity as any).user.id == user.id) {
       (entity as any).title = title;
       (entity as any).description = description;
       await (entity as any).save();
