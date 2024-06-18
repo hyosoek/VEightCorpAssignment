@@ -33,13 +33,12 @@ jobs:
           docker push tennfin1/veight:latest
 
       - name: SSH to EC2 and update container
-        uses: appleboy/ssh-action@v0.1.5
+        uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            #!/bin/bash
             docker pull tennfin1/veight:latest
             docker stop veight || true
             docker rm veight || true
