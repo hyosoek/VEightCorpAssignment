@@ -41,4 +41,4 @@ jobs:
             docker pull tennfin1/veight:latest
             docker stop veight || true
             docker rm veight || true
-            docker run -d --name veight -p 8000:3000 tennfin1/veight:latest
+            docker run -d --name veight --env-file /home/ubuntu/veight_corp_webserver/.env -p 8000:3000 tennfin1/veight:latest
