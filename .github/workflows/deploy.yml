@@ -42,3 +42,4 @@ jobs:
             docker stop veight || true
             docker rm veight || true
             docker run -d --name veight --env-file /home/ubuntu/veight_corp_webserver/.env -p 8000:3000 tennfin1/veight:latest
+            docker image prune -f
